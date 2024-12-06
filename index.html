@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>JsonShelter - PHP JSON Manager</title>
+        <style>
+            body {
+                font-family: "Arial", sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                background-color: #f8f9fa;
+                color: #343a40;
+            }
+            header {
+                text-align: center;
+                padding: 10px 0;
+            }
+            h1 {
+                font-size: 2.5em;
+                color: #007bff;
+            }
+            h2 {
+                color: #495057;
+                border-bottom: 2px solid #007bff;
+                padding-bottom: 5px;
+            }
+            h3 {
+                color: #007bff;
+            }
+            pre {
+                background-color: #e9ecef;
+                border-left: 5px solid #007bff;
+                padding: 10px;
+                overflow-x: auto;
+            }
+            section {
+                margin: 20px 0;
+                padding: 15px;
+                background: #ffffff;
+                border-radius: 5px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            a {
+                color: #007bff;
+            }
+            footer {
+    background-color: #333; /* Dark background */
+    color: #fff; /* White text */
+    text-align: center; /* Centered text */
+    padding: 20px 0; /* Padding above and below */
+    position: relative; /* Positioning for any additional elements */
+    bottom: 0; /* Stick to the bottom */
+    width: 100%; /* Full width */
+    font-family: 'Arial', sans-serif; /* Font type */
+}
+
+footer p {
+    margin: 5px 0; /* Margin around paragraphs */
+    font-size: 14px; /* Font size */
+}
+
+footer strong {
+    color: #ff9800; /* Highlighted color for 'JsonShelter' */
+}
+
+@media (max-width: 600px) {
+    footer p {
+        font-size: 12px; /* Responsive font size for smaller screens */
+    }
+}
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>🗄️ JsonShelter</h1>
+            <p>Your Friendly PHP JSON Manager</p>
+        </header>
+
+        <section>
+            <h2>Welcome!</h2>
+            <p>
+                JsonShelter is a nifty PHP library for effortless JSON data
+                management. Let’s explore installation and usage!
+            </p>
+        </section>
+
+        <section>
+            <h2>Installation ⚙️</h2>
+            <h3>Method 1: Install via Composer 🎵</h3>
+            <pre><code>composer require almhdy/json-shelter</code></pre>
+
+            <h3>Method 2: Clone the Repository 🥳</h3>
+            <pre><code>git clone https://github.com/almhdy24/JsonShelter.git</code></pre>
+
+            <h3>Method 3: Download as Archive 📦</h3>
+            <p>
+                Download a release from the
+                <a href="https://github.com/almhdy24/JsonShelter/releases"
+                    >releases page</a
+                >
+                and extract it to your project.
+            </p>
+        </section>
+
+        <section>
+            <h2>Usage 📖</h2>
+            <p>
+                Integrate JsonShelter easily! Include the class via Composer or
+                directly.
+            </p>
+
+            <h3>Option 1: Using Composer 🥇</h3>
+            <pre><code>
+// Include Composer's autoload file
+require 'vendor/autoload.php';
+
+// Use JsonShelter
+use Almhdy\JsonShelter\JsonShelter;
+
+$db = new JsonShelter("myDatabase", "your_secret_key", "your_secret_iv");
+</code></pre>
+
+            <h3>Option 2: Directly Including the File 🌟</h3>
+            <pre><code>// Include JsonShelter class file
+require 'path/to/JsonShelter.php';  // Adjust path
+
+// Use JsonShelter
+use Almhdy\JsonShelter\JsonShelter;
+
+$db = new JsonShelter("myDatabase", "your_secret_key", "your_secret_iv");
+</code></pre>
+        </section>
+
+        <section>
+            <h2>Encryption 🛡️</h2>
+            <p>
+                You can easily enable or disable encryption for your records.
+                This is a handy feature to keep your data secure!
+            </p>
+
+            <h3>Enable Encryption:</h3>
+            <pre><code>$db->enableEncryption();</code></pre>
+
+            <h3>Disable Encryption:</h3>
+            <pre><code>$db->disableEncryption();</code></pre>
+        </section>
+        <section>
+            <h2>Conclusion 🚀</h2>
+            <p>
+                Thank you for exploring the JsonShelter library! For more
+                detailed information and documentation, please visit our GitHub
+                repository. We encourage you to use this powerful tool, share it
+                with others, and contribute to its ongoing development!
+            </p>
+            <p>
+                Your feedback and contributions help us make this project even
+                better. Let's build something great together!
+            </p>
+        </section>
+        <footer>
+            <p>&copy; 2024 JsonShelter. All rights reserved.</p>
+            <p>Powered by <strong>Elmahdi Abdallh</strong></p>
+        </footer>
+    </body>
+</html>
