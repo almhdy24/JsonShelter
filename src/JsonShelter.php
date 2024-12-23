@@ -10,7 +10,7 @@ class JsonShelter
 
   // Constructor to initialize the database directory and encryption
   public function __construct(
-    string $baseDir = null,
+    ?string $baseDir,
     string $secretKey,
     string $secretIv
   ) {
@@ -128,7 +128,7 @@ class JsonShelter
   {
     // Validate the record data before processing
     if (empty($record)) {
-      throw new InvalidArgumentException("Record cannot be empty");
+      throw new \InvalidArgumentException("Record cannot be empty");
     }
 
     $data = $this->readFile($table);
@@ -219,6 +219,36 @@ class JsonShelter
     }
   }
 
+// Read records from the specified table that match the given conditions
+public function where(string $table, array $conditions): array
+{
+    // Validate the table name
+    if (empty($table) || !is_string($table)) {
+        throw new \InvalidArgumentException("Invalid table name provided.");
+    }
+
+    // Read all records from the specified table
+    $data = $this->readFile($table);
+    $results = []; // Initialize an array to hold matching records
+
+    // Iterate through each record and check if it matches the conditions
+    foreach ($data as $record) {
+        $matches = true;
+        foreach ($conditions as $key => $value) {
+            // Check if the record has the key and if its value matches the condition
+            if (!array_key_exists($key, $record) || $record[$key] !== $value) {
+                $matches = false;
+                break; // Exit the inner loop if a condition is not met
+            }
+        }
+        // If all conditions are met, add the record to the results
+        if ($matches) {
+            $results[] = $record;
+        }
+    }
+
+    return $results; // Return all records that matched the conditions
+}
   // Generate a unique ID for a new record
   private function generateId(array $data): int
   {
@@ -239,104 +269,105 @@ class JsonShelter
     // file logging errors
     error_log($message);
   }
-    // Get the size and permissions of all JSON files in the base directory
-    public function getJsonFilesInfo(): array
-    {
-        if (!is_dir($this->baseDir)) {
-            return ["error" => "Directory does not exist."];
-        }
-
-        if (!is_readable($this->baseDir)) {
-            return ["error" => "Directory is not readable."];
-        }
-
-        $filesInfo = [];
-        $files = glob($this->baseDir . '/*.json'); // Get all JSON files in the baseDir
-
-        if (empty($files)) {
-            return ["message" => "No JSON files found in the directory."];
-        }
-
-        foreach ($files as $file) {
-            $fileSize = filesize($file); // Get file size
-            $permissions = fileperms($file); // Get permissions
-            $filesInfo[$file] = [
-                'size' => $fileSize,
-                'permissions' => $this->getPermissionsString($permissions)
-            ];
-        }
-
-        return $filesInfo; // Return an array with size and permissions for each file
+  // Get the size and permissions of all JSON files in the base directory
+  public function getJsonFilesInfo(): array
+  {
+    if (!is_dir($this->baseDir)) {
+      return ["error" => "Directory does not exist."];
     }
 
-    // Set best permissions for all JSON files in the base directory
-    public function setBestPermissionsForJsonFiles(): array
-    {
-        if (!is_dir($this->baseDir)) {
-            return ["error" => "Directory does not exist."];
-        }
-
-        if (!is_writable($this->baseDir)) {
-            return ["error" => "Directory is not writable."];
-        }
-
-        $files = glob($this->baseDir . '/*.json'); // Get all JSON files in the baseDir
-        $results = [];
-        $bestPermissions = 0664; // Set best permissions (rw-rw-r--)
-
-        if (empty($files)) {
-            return ["message" => "No JSON files found to update permissions."];
-        }
-
-        foreach ($files as $file) {
-            $result = chmod($file, $bestPermissions);
-
-            if (!$result) {
-                $results[$file] = "Failed to update permissions due to insufficient permissions or other errors.";
-            } else {
-                $results[$file] = "Permissions updated successfully.";
-            }
-        }
-
-        return $results; // Return results for each file
+    if (!is_readable($this->baseDir)) {
+      return ["error" => "Directory is not readable."];
     }
 
-    // Check if the base directory is readable and writable
-    public function checkDirectoryStatus(): array
-    {
-        $status = [];
+    $filesInfo = [];
+    $files = glob($this->baseDir . "/*.json"); // Get all JSON files in the baseDir
 
-        if (!is_dir($this->baseDir)) {
-            $status['error'] = "Directory does not exist.";
-        } else {
-            $status['readable'] = is_readable($this->baseDir);
-            $status['writable'] = is_writable($this->baseDir);
-            $status['message'] = "Directory exists.";
-        }
-
-        return $status; // Return directory status
+    if (empty($files)) {
+      return ["message" => "No JSON files found in the directory."];
     }
 
-    // Helper function to convert permissions to a readable string
-    private function getPermissionsString($permissions): string
-    {
-        $info = '';
-
-        // Convert to human-readable form
-        $info .= ($permissions & 0x1000) ? 'p' : '-'; // FIFO pipe
-        $info .= ($permissions & 0x2000) ? 'c' : '-'; // Character special
-        $info .= ($permissions & 0x4000) ? 'd' : '-'; // Directory
-        $info .= ($permissions & 0x6000) ? 'b' : '-'; // Block special
-        $info .= ($permissions & 0x100) ? 'r' : '-'; // Owner read
-        $info .= ($permissions & 0x80) ? 'w' : '-'; // Owner write
-        $info .= ($permissions & 0x40) ? 'x' : '-'; // Owner execute
-        $info .= ($permissions & 0x20) ? 'r' : '-'; // Group read
-        $info .= ($permissions & 0x10) ? 'w' : '-'; // Group write
-        $info .= ($permissions & 0x8) ? 'x' : '-';  // Group execute
-        $info .= ($permissions & 0x4) ? 'r' : '-'; // Other read
-        $info .= ($permissions & 0x2) ? 'w' : '-'; // Other write
-        $info .= ($permissions & 0x1) ? 'x' : '-'; // Other execute
-
-        return $info; // Return permissions string
+    foreach ($files as $file) {
+      $fileSize = filesize($file); // Get file size
+      $permissions = fileperms($file); // Get permissions
+      $filesInfo[$file] = [
+        "size" => $fileSize,
+        "permissions" => $this->getPermissionsString($permissions),
+      ];
     }
+
+    return $filesInfo; // Return an array with size and permissions for each file
+  }
+
+  // Set best permissions for all JSON files in the base directory
+  public function setBestPermissionsForJsonFiles(): array
+  {
+    if (!is_dir($this->baseDir)) {
+      return ["error" => "Directory does not exist."];
+    }
+
+    if (!is_writable($this->baseDir)) {
+      return ["error" => "Directory is not writable."];
+    }
+
+    $files = glob($this->baseDir . "/*.json"); // Get all JSON files in the baseDir
+    $results = [];
+    $bestPermissions = 0664; // Set best permissions (rw-rw-r--)
+
+    if (empty($files)) {
+      return ["message" => "No JSON files found to update permissions."];
+    }
+
+    foreach ($files as $file) {
+      $result = chmod($file, $bestPermissions);
+
+      if (!$result) {
+        $results[$file] =
+          "Failed to update permissions due to insufficient permissions or other errors.";
+      } else {
+        $results[$file] = "Permissions updated successfully.";
+      }
+    }
+
+    return $results; // Return results for each file
+  }
+
+  // Check if the base directory is readable and writable
+  public function checkDirectoryStatus(): array
+  {
+    $status = [];
+
+    if (!is_dir($this->baseDir)) {
+      $status["error"] = "Directory does not exist.";
+    } else {
+      $status["readable"] = is_readable($this->baseDir);
+      $status["writable"] = is_writable($this->baseDir);
+      $status["message"] = "Directory exists.";
+    }
+
+    return $status; // Return directory status
+  }
+
+  // Helper function to convert permissions to a readable string
+  private function getPermissionsString($permissions): string
+  {
+    $info = "";
+
+    // Convert to human-readable form
+    $info .= $permissions & 0x1000 ? "p" : "-"; // FIFO pipe
+    $info .= $permissions & 0x2000 ? "c" : "-"; // Character special
+    $info .= $permissions & 0x4000 ? "d" : "-"; // Directory
+    $info .= $permissions & 0x6000 ? "b" : "-"; // Block special
+    $info .= $permissions & 0x100 ? "r" : "-"; // Owner read
+    $info .= $permissions & 0x80 ? "w" : "-"; // Owner write
+    $info .= $permissions & 0x40 ? "x" : "-"; // Owner execute
+    $info .= $permissions & 0x20 ? "r" : "-"; // Group read
+    $info .= $permissions & 0x10 ? "w" : "-"; // Group write
+    $info .= $permissions & 0x8 ? "x" : "-"; // Group execute
+    $info .= $permissions & 0x4 ? "r" : "-"; // Other read
+    $info .= $permissions & 0x2 ? "w" : "-"; // Other write
+    $info .= $permissions & 0x1 ? "x" : "-"; // Other execute
+
+    return $info; // Return permissions string
+  }
 }
