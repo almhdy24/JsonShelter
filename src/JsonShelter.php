@@ -219,12 +219,12 @@ class JsonShelter
     }
   }
 
-// Read records from the specified table that match the given conditions
-public function where(string $table, array $conditions): array
-{
+  // Read records from the specified table that match the given conditions
+  public function where(string $table, array $conditions): array
+  {
     // Validate the table name
     if (empty($table) || !is_string($table)) {
-        throw new \InvalidArgumentException("Invalid table name provided.");
+      throw new \InvalidArgumentException("Invalid table name provided.");
     }
 
     // Read all records from the specified table
@@ -233,22 +233,22 @@ public function where(string $table, array $conditions): array
 
     // Iterate through each record and check if it matches the conditions
     foreach ($data as $record) {
-        $matches = true;
-        foreach ($conditions as $key => $value) {
-            // Check if the record has the key and if its value matches the condition
-            if (!array_key_exists($key, $record) || $record[$key] !== $value) {
-                $matches = false;
-                break; // Exit the inner loop if a condition is not met
-            }
+      $matches = true;
+      foreach ($conditions as $key => $value) {
+        // Check if the record has the key and if its value matches the condition
+        if (!array_key_exists($key, $record) || $record[$key] !== $value) {
+          $matches = false;
+          break; // Exit the inner loop if a condition is not met
         }
-        // If all conditions are met, add the record to the results
-        if ($matches) {
-            $results[] = $record;
-        }
+      }
+      // If all conditions are met, add the record to the results
+      if ($matches) {
+        $results[] = $record;
+      }
     }
 
     return $results; // Return all records that matched the conditions
-}
+  }
   // Generate a unique ID for a new record
   private function generateId(array $data): int
   {
@@ -299,6 +299,32 @@ public function where(string $table, array $conditions): array
     return $filesInfo; // Return an array with size and permissions for each file
   }
 
+// Search records in the specified table by a keyword in a given field
+public function search(string $table, string $field, string $keyword): array
+{
+    // Validate the table name and field name
+    if (empty($table) || !is_string($table)) {
+        throw new \InvalidArgumentException("Invalid table name provided.");
+    }
+
+    if (empty($field) || !is_string($field)) {
+        throw new \InvalidArgumentException("Invalid field name provided.");
+    }
+
+    // Read all records from the specified table
+    $data = $this->readFile($table);
+    $results = []; // Initialize an array to hold matching records
+
+    // Iterate through each record and check for keyword match in the specified field
+    foreach ($data as $record) {
+        // Check if the field exists in the record and if it contains the keyword
+        if (array_key_exists($field, $record) && stripos($record[$field], $keyword) !== false) {
+            $results[] = $record; // Add the record if it matches
+        }
+    }
+
+    return $results; // Return all matched records
+}
   // Set best permissions for all JSON files in the base directory
   public function setBestPermissionsForJsonFiles(): array
   {
