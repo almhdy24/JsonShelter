@@ -2,7 +2,7 @@
     "name": "almhdy/json-shelter",
     "description": "The **JsonShelter** class provides a simple, file-based JSON database solution. It allows for creating, reading, updating, and deleting records in structured JSON format. With an intuitive interface, it manages data storage in specified directories, ensuring seamless access to your data. Each record is uniquely identifiable, simplifying data manipulation and organization. Ideal for lightweight applications or prototyping, **JsonShelter** is easy to implement and maintain, making it a suitable choice for developers looking for a straightforward database solution.",
     "license": "MIT",
-    "version": "V1.0.2",
+    "version": "1.0.3",
     "autoload": {
         "psr-4": {
             "Almhdy\\JsonShelter\\": "src/"
@@ -15,5 +15,8 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "psr/log": "^3.0",
+        "monolog/monolog": "^3.8"
+    }
 }
