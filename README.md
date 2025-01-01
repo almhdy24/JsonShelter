@@ -1,3 +1,4 @@
+
 # 🗄️ JsonShelter - Your Friendly PHP JSON Manager
 
 Welcome to JsonShelter! This is a nifty PHP library designed to help you store and manage your JSON data with ease. Let's dive into the installation and usage instructions! 🚀
@@ -24,7 +25,7 @@ git clone https://github.com/almhdy24/JsonShelter.git
 
 ### Method 3: Download as Archive 📦
 
-You can also download a release archive from GitHub. Simply visit the [releases page](https://github.com/almhdy24/JsonShelter/releases) and grab the latest version as a ZIP file. Extract it to your project directory afterward.
+You can also download a release archive from GitHub. Simply visit the [releases page](https://github.com/almhdy24/JsonShelter/releases) and grab the latest version as a ZIP file. Extract it to your project directory.
 
 ## Usage 📖
 
@@ -39,14 +40,17 @@ If you used Composer, just include the autoload file and get started! Here’s a
 require 'vendor/autoload.php';
 
 // Use the JsonShelter namespace
-use Almhdy\JsonShelter\JsonShelter;
+use Almhdy\JsonShelter.JsonShelter;
 
 // Create a new JsonShelter instance
 $baseDir = "myDatabase"; // Base directory path
 $secretKey = "your_secret_key"; // Your secret key
 $secretIv = "your_secret_iv"; // Your secret IV
 
-$db = new JsonShelter($baseDir, $secretKey, $secretIv);
+$logger = new Logger('json_shelter');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Logger::DEBUG));
+
+$db = new JsonShelter($baseDir, $secretKey, $secretIv, $logger);
 ```
 
 ### Option 2: Directly Including the File 🌟
@@ -58,14 +62,17 @@ If you cloned the repo or downloaded the archive, include the `JsonShelter.php` 
 require 'path/to/JsonShelter.php';  // Set the correct path
 
 // Use the JsonShelter namespace
-use Almhdy\JsonShelter\JsonShelter;
+use Almhdy.JsonShelter.JsonShelter;
 
 // Create a new JsonShelter instance
 $baseDir = "myDatabase"; // Base directory path
 $secretKey = "your_secret_key"; // Your secret key
 $secretIv = "your_secret_iv"; // Your secret IV
 
-$db = new JsonShelter($baseDir, $secretKey, $secretIv);
+$logger = new Logger('json_shelter');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Logger::DEBUG));
+
+$db = new JsonShelter($baseDir, $secretKey, $secretIv, $logger);
 ```
 
 ### Encryption 🛡️
@@ -117,11 +124,157 @@ $db->update('myTable', 1, ['age' => 31]); // Increment age
 $db->delete('myTable', 1); // Replace 1 with the record ID
 ```
 
-## 🌟 Additional Methods Overview
+## Model Class
 
-Our database manager 🌈, now affectionately called "db," comes packed with handy extra methods 🎉 that make managing JSON files and checking their directory status a breeze! Let’s explore these features with a touch of flair. 💼✨
+The `Model` class provides an ORM-like interface to interact with the `JsonShelter` class.
 
-## 1. 📂 Check Directory Status
+### Initialization
+
+First, initialize a `Model` for a specific table:
+
+```php
+use Almhdy.JsonShelter.Model;
+
+// Initialize a Model for the 'users' table
+$userModel = new Model($db, 'users');
+```
+
+### Inserting Data
+
+Inserting data using the `Model`:
+
+```php
+// Insert a new record
+$userModel->create(['name' => 'Jane Doe', 'email' => 'jane@example.com']);
+```
+
+### Reading Data
+
+Reading all records:
+
+```php
+// Read all records
+$users = $userModel->all();
+print_r($users);
+```
+
+Reading a specific record by ID:
+
+```php
+// Read a specific record by ID
+$user = $userModel->find(1);
+print_r($user);
+```
+
+### Updating Data
+
+Updating a record:
+
+```php
+// Update a record
+$userModel->update(1, ['email' => 'jane.doe@example.com']);
+```
+
+### Deleting Data
+
+Deleting a record:
+
+```php
+// Delete a record
+$userModel->delete(1);
+```
+
+### Querying Data
+
+Filtering records:
+
+```php
+// Get users with the name 'Jane Doe'
+$users = $userModel->where(['name' => 'Jane Doe']);
+print_r($users);
+```
+
+Searching within a field:
+
+```php
+// Search for users with 'example.com' in their email
+$users = $userModel->search('email', 'example.com');
+print_r($users);
+```
+
+Ordering and limiting data:
+
+```php
+// Order users by name in ascending order
+$orderedUsers = $userModel->orderBy('name', 'asc');
+print_r($orderedUsers);
+
+// Limit the number of users returned
+$limitedUsers = $userModel->limit(10, 0);
+print_r($limitedUsers);
+```
+
+## JsonEncryptor Class
+
+The `JsonEncryptor` class handles encryption and decryption of data.
+
+### Initialization
+
+Initialize the `JsonEncryptor` class with a secret key and initialization vector:
+
+```php
+use Almhdy.JsonShelter.JsonEncryptor;
+
+// Initialize JsonEncryptor
+$encryptor = new JsonEncryptor('your_secret_key', 'your_secret_iv');
+```
+
+### Encrypting Data
+
+Encrypting data:
+
+```php
+$data = ['name' => 'Jane Doe', 'email' => 'jane@example.com'];
+$encryptedData = $encryptor->encrypt($data);
+echo $encryptedData;
+```
+
+### Decrypting Data
+
+Decrypting data:
+
+```php
+$decryptedData = $encryptor->decrypt($encryptedData);
+print_r($decryptedData);
+```
+
+### Handling Large Datasets
+
+Encrypting a large file using streams:
+
+```php
+$inputStream = fopen('path/to/large_file.json', 'rb');
+$outputStream = fopen('path/to/encrypted_file.enc', 'wb');
+$encryptor->encryptStream($inputStream, $outputStream);
+fclose($inputStream);
+fclose($outputStream);
+```
+
+Decrypting a large file using streams:
+
+```php
+$inputStream = fopen('path/to/encrypted_file.enc', 'rb');
+$outputStream = fopen('path/to/decrypted_file.json', 'wb');
+$encryptor->decryptStream($inputStream, $outputStream);
+fclose($inputStream);
+fclose($outputStream);
+```
+
+## Additional Methods Overview
+
+Our database manager 🌈, now affectionately called "db," comes packed with handy extra methods 🎉 that make managing JSON files and checking their directory status a breeze! Let’s explore them.
+
+### Check Directory Status
 
 Before diving into the JSON realm, make sure your directory is in tip-top shape! This method checks if it’s readable and writable:
 
@@ -130,18 +283,7 @@ $status = $db->checkDirectoryStatus();
 print_r($status);
 ```
 
-### Purpose 🕵️‍♂️
-
-- **Readability**: Ensures you can easily read files from the directory. 📖
-- **Writability**: Confirms that you can create or modify files without a hitch! ✍️
-
-### Expected Output 🎉
-
-You’ll receive an associative array detailing the directory's read and write capabilities! This is a developer's best friend for troubleshooting permission issues! 🛠️
-
----
-
-## 2. 🗄️ Get Size and Permissions of JSON Files
+### Get Size and Permissions of JSON Files
 
 Curious about your JSON files? This method gives you the lowdown on their size and permissions:
 
@@ -150,18 +292,7 @@ $directoryInfo = $db->getJsonFilesInfo();
 print_r($directoryInfo);
 ```
 
-### Purpose 📊
-
-- **File Size**: See how much space your JSON files are taking up! 🚀
-- **File Permissions**: Check the permissions for each file—crucial for security! 🔒
-
-### Expected Output 🥳
-
-You’ll get an array where each JSON file is highlighted, showcasing its size and permissions. It’s like a report card for your files! 📝
-
----
-
-## 3. 🛡️ Set Best Permissions for JSON Files
+### Set Best Permissions for JSON Files
 
 Let’s tighten up security! This method automatically sets the best permissions for your JSON files:
 
@@ -170,22 +301,8 @@ $permissionResults = $db->setBestPermissionsForJsonFiles();
 print_r($permissionResults);
 ```
 
-### Purpose 🔐
-
-- **Security Boost**: Ensures your JSON files have just the right permissions, keeping unwanted eyes away! 👀
-- **Standardization**: Applies uniform permission settings across all files—cohesion is key! 🔗
-
-### Expected Output 🎊
-
-You’ll receive an array reflecting the results of all the nifty permission adjustments made. Verify that everything’s shipshape and ready to go! ⚓️
-
----
-
-With these vibrant methods 💖, managing your JSON files becomes not just easy, but enjoyable! Embrace the elegance of efficient code and let db do the heavy lifting, making your application shine like a star! 🌟✨
-
 ## Conclusion 🎉
 
-And that's a wrap! 🎊 You've now unlocked the power of JsonShelter, making it super simple to integrate into your PHP applications! 🚀 With just a few easy steps, you're ready to harness the full potential of JSON management.
+And that's a wrap! 🎊 You've now unlocked the power of JsonShelter, making it super simple to integrate into your PHP applications! 🚀 With just a few easy steps, you're ready to harness the power of file-based JSON data management, complete with encryption and ORM-like capabilities.
 
-Remember, every line of code brings you closer to your goals. Embrace the journey and happy coding! 😄💻✨ 
-
+Remember, every line of code brings you closer to your goals. Embrace the journey and happy coding! 😄💻✨
