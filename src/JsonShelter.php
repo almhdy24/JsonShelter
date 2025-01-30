@@ -2,6 +2,7 @@
 namespace Almhdy\JsonShelter;
 
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class JsonShelter
 {
@@ -16,15 +17,13 @@ class JsonShelter
         string $secretIv,
         LoggerInterface $logger
     ) {
-        if ($baseDir === null) {
-            $baseDir = $this->baseDir;
+        $this->baseDir = $baseDir ?? $this->baseDir;
+
+        if (!is_dir($this->baseDir)) {
+            mkdir($this->baseDir, 0777, true);
         }
 
-        if (!is_dir($baseDir)) {
-            mkdir($baseDir, 0777, true);
-        }
-
-        $this->baseDir = rtrim($baseDir, "/");
+        $this->baseDir = rtrim($this->baseDir, "/");
         $this->encryptor = new JsonEncryptor($secretKey, $secretIv);
         $this->isEncryptionEnabled = true;
         $this->logger = $logger;
@@ -75,7 +74,7 @@ class JsonShelter
             } else {
                 throw new \Exception("Invalid file structure: 'content' key not found.");
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logger->error("Error reading file: " . $e->getMessage());
             return [];
         }
@@ -99,7 +98,7 @@ class JsonShelter
             if (file_put_contents($filePath, json_encode($content, JSON_PRETTY_PRINT)) === false) {
                 throw new \Exception("Failed to write data to file.");
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logger->error("Error writing file '{$filePath}': " . $e->getMessage());
         }
     }
@@ -150,7 +149,7 @@ class JsonShelter
     public function update(string $table, int $id, array $newData): bool
     {
         if (empty($newData)) {
-            throw new InvalidArgumentException("New data cannot be empty");
+            throw new \InvalidArgumentException("New data cannot be empty");
         }
 
         $data = $this->readFile($table);
@@ -177,9 +176,7 @@ class JsonShelter
 
         try {
             $data = $this->readFile($table);
-            $filteredData = array_filter($data, function ($record) use ($id) {
-                return $record["id"] !== $id;
-            });
+            $filteredData = array_filter($data, fn($record) => $record["id"] !== $id);
 
             if (count($data) === count($filteredData)) {
                 $this->logger->error("Record with ID {$id} not found in table '{$table}'.");
@@ -188,7 +185,7 @@ class JsonShelter
 
             $this->writeFile($table, array_values($filteredData));
             return true;
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->logger->error("Error deleting record from table '{$table}': " . $e->getMessage());
             return false;
         }
@@ -261,13 +258,7 @@ class JsonShelter
     public function orderBy(string $table, string $field, string $direction = 'asc'): array
     {
         $data = $this->readAll($table);
-        usort($data, function ($a, $b) use ($field, $direction) {
-            if ($direction === 'asc') {
-                return $a[$field] <=> $b[$field];
-            } else {
-                return $b[$field] <=> $a[$field];
-            }
-        });
+        usort($data, fn($a, $b) => $direction === 'asc' ? $a[$field] <=> $b[$field] : $b[$field] <=> $a[$field]);
         return $data;
     }
 
@@ -279,8 +270,7 @@ class JsonShelter
 
     public function hasOne(string $relatedTable, string $foreignKey, string $localKey): array
     {
-        $relatedData = $this->where($relatedTable, [$foreignKey => $localKey]);
-        return $relatedData;
+        return $this->where($relatedTable, [$foreignKey => $localKey]);
     }
 
     public function hasMany(string $relatedTable, string $foreignKey, string $localKey): array
